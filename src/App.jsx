@@ -136,14 +136,14 @@ const Scanline = () => (
    CUSTOM CURSOR
 ══════════════════════════════════════════════════════════════════ */
 const CustomCursor = () => {
-  const mx = useMotionValue(-100);
-  const my = useMotionValue(-100);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
   const sx = useSpring(mx, { stiffness: 520, damping: 36 });
   const sy = useSpring(my, { stiffness: 520, damping: 36 });
   const [pressed, setPressed] = useState(false);
 
   useEffect(() => {
-    const mv = e => { mx.set(e.clientX); my.set(e.clientY); };
+    const mv = e => { mx.set(e.pageX); my.set(e.pageY); };
     const dn = () => setPressed(true);
     const up = () => setPressed(false);
     window.addEventListener("mousemove", mv);
@@ -159,7 +159,7 @@ const CustomCursor = () => {
   return (
     <motion.div
       style={{
-        position: "fixed",
+        position: "absolute",
         x: sx, y: sy, translateX: "-50%", translateY: "-50%",
         pointerEvents: "none", zIndex: 99999,
         scale: pressed ? 0.72 : 1,
@@ -294,11 +294,13 @@ const Nav = () => {
         transition: "all .4s",
       }}
     >
-      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:"#8b0000", letterSpacing:5 }}>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:"#8b0000", letterSpacing:5, cursor: "pointer" }}
+        onClick={() => document.getElementById("hero")?.scrollIntoView({ behavior:"smooth" })}
+      >
         АРХИВ / 1984
       </div>
 
-      <div style={{ display:"flex", gap:28 }}>
+      <div style={{ display:"flex", gap:28, flexWrap: "wrap", justifyContent: "center", flex: 1, marginLeft: 40 }}>
         {LINKS.map(([id, label]) => (
           <button key={id}
             onClick={() => document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
@@ -308,7 +310,7 @@ const Nav = () => {
               fontFamily: "'Share Tech Mono',monospace", fontSize: 10,
               color: active === id ? "#c8102e" : "#3a3a3a",
               letterSpacing: ".14em", padding: "3px 0",
-              transition: "all .2s",
+              transition: "all .2s", cursor: "pointer",
             }}
           >{label}</button>
         ))}
@@ -439,6 +441,7 @@ const Hero = () => (
       style={{
         position:"absolute", bottom:34, left:"50%", transform:"translateX(-50%)",
         display:"flex", flexDirection:"column", alignItems:"center", gap:8,
+        zIndex: 100, pointerEvents: "none"
       }}
     >
       <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:".25em", color:"#2a2a2a" }}>ПРОКРУТИТЬ</div>
@@ -698,13 +701,12 @@ const Meanings = () => {
             initial={{ opacity:0, x:-36 }}
             animate={inV ? {opacity:1, x:0} : {}}
             transition={{ delay:.14 + i * .16, duration:.65 }}
-            style={{ display:"flex", alignItems:"center", gap:24, padding:"18px 0", borderBottom:"1px solid #111" }}
+            style={{ display:"flex", alignItems:"center", gap:24, padding:"18px 0", borderBottom:"1px solid #111", flexWrap: "wrap" }}
           >
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(26px,4vw,56px)", color:"#8b0000", letterSpacing:3, flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(24px,4vw,48px)", color:"#8b0000", letterSpacing:3, flex:"1 1 200px", wordBreak: "break-word" }}>
               {s.ru}
             </div>
-            <div style={{ width:1, height:34, background:"#1c1c1c", flexShrink:0 }}/>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(14px,2vw,28px)", color:"#252525", letterSpacing:2, flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(12px,2vw,24px)", color:"#252525", letterSpacing:2, flex:"1 1 200px" }}>
               {s.en}
             </div>
           </motion.div>
@@ -723,12 +725,12 @@ const Meanings = () => {
               animate={inV ? {opacity:1, y:0} : {}}
               transition={{ delay:.9 + i * .08 }}
               whileHover={{ backgroundColor:"#0d0000", borderColor:"#7a0000" }}
-              style={{ padding:"18px 20px", border:"1px solid #161616", background:"#0a0a0a", transition:"all .25s" }}
+              style={{ padding:"18px 20px", border:"1px solid #161616", background:"#0a0a0a", transition:"all .25s", overflow: "hidden" }}
             >
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:"#c8102e", letterSpacing:2, marginBottom:8 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:"#c8102e", letterSpacing:2, marginBottom:8, wordBreak: "break-word" }}>
                 {n.w}
               </div>
-              <div style={{ fontFamily:"monospace", fontSize:11, color:"#444", lineHeight:1.7 }}>{n.d}</div>
+              <div style={{ fontFamily:"monospace", fontSize:11, color:"#444", lineHeight:1.7, wordBreak: "break-word" }}>{n.d}</div>
             </motion.div>
           ))}
         </div>
@@ -786,29 +788,23 @@ const Meanings = () => {
 const EXCERPTS = [
   {
     ch: "ЧАСТЬ I · ГЛАВА 1",
-    text: `Был ясный, холодный апрельский день, и часы пробили тринадцать. Уинстон Смит, прижав подбородок к груди, чтобы спастись от злого ветра, торопливо скользнул за стеклянную дверь жилого дома «Победа», хотя не так быстро, чтобы ветер не успел вместе с ним швырнуть внутрь вихрь песчаной пыли.`,
+    text: `Был ясный, холодный апрельский день, и часы пробили тринадцать. Уинстон Смит, прижав подбородок к груди, чтобы спастись от злого ветра, торопливо скользнул за стеклянную дверь жилого дома «Победа», хотя не так быстро, чтобы ветер не успел вместе с ним швырнуть внутрь вихрь песчаной пыли.\n\nДом был разбит на полусогнутые квартиры, с окнами, которые начинались в четырёх футах от земли. От улицы видно было только верхнюю часть телеэкрана; нижнюю половину заслоняла карниз окна. Но напротив окна находился ещё один телеэкран — телеэкран, мимо которого нельзя было пройти, не увидев собственного отражения.`,
   },
   {
     ch: "ДНЕВНИК · 4 АПРЕЛЯ",
-    text: `4 апреля 1984 года.
-Вчера в кино. Военные фильмы. Очень хороший — как лодку с беженцами бомбили вертолётами в Средиземном море. Публика очень развлекалась, кричала «ещё!», когда вертолёт топил лодку, полную детей.
-
-ДОЛОЙ БОЛЬШОГО БРАТА.
-ДОЛОЙ БОЛЬШОГО БРАТА.
-ДОЛОЙ БОЛЬШОГО БРАТА.`,
+    text: `4 апреля 1984 года.\nВчера в кино. Военные фильмы. Очень хороший — как лодку с беженцами бомбили вертолётами в Средиземном море. Публика очень развлекалась, кричала «ещё!», когда вертолёт топил лодку, полную детей.\n\nДОЛОЙ БОЛЬШОГО БРАТА.\nДОЛОЙ БОЛЬШОГО БРАТА.\nДОЛОЙ БОЛЬШОГО БРАТА.\n\nВот видишь — это невозможно? Ужас? Или это просто развлечение? Хор вскочил с мест и восторженно аплодировал экрану.`,
   },
   {
     ch: "ЗАПИСКА ДЖУЛИИ",
-    text: `Незнакомка протянула ему сложенный клочок бумаги.
-Он развернул и прочитал. Написано было отчётливо, крупными буквами:
-
-«Я тебя люблю.»
-
-С минуту он сидел в оцепенении, не замечая смысла написанного. Потом понял — и почувствовал холодную тревогу.`,
+    text: `Незнакомка протянула ему сложенный клочок бумаги.\nОн развернул и прочитал. Написано было отчётливо, крупными буквами:\n\n«Я тебя люблю.»\n\nС минуту он сидел в оцепенении, не замечая смысла написанного. Потом понял — и почувствовал холодную тревогу. Это была смерть. Это была сразу смерть. Никакие слова более странные не могли быть написаны для человека, живущего в мире, где любовь между мужчиной и женщиной — особое преступление.`,
+  },
+  {
+    ch: "КОМНАТА 101",
+    text: `— Вы уже знаете, — сказал О'Брайен, — в какой комнате находитесь. Вы всегда знали. Все знают. История человечества наполнена Комнатами 101.\n\nСтена позади О'Брайена приводила в действие какой-то механизм. Железная дверь внизу открылась. Из отверстия хлынул запах животного. На первый момент Уинстон не понял, что это — какое-то смутное, отвратительное впечатление. Потом он услышал писк.`,
   },
   {
     ch: "ЧАСТЬ III · ФИНАЛ",
-    text: `Всё было в порядке, теперь всё в порядке, борьба окончена. Он одержал победу над собой. Он любил Большого Брата.`,
+    text: `Сидя на скамье в кафе, он пил джин и смотрел телевизор. Он любил Большого Брата.\n\nВсё было в порядке, теперь всё в порядке, борьба окончена. Он одержал победу над собой. Он любил Большого Брата.`,
   },
 ];
 
@@ -826,7 +822,7 @@ const Library = () => {
 
       <motion.div
         initial={{ opacity:0, y:22 }} animate={inV ? {opacity:1, y:0} : {}} transition={{ delay:.3 }}
-        style={{ display:"grid", gridTemplateColumns:"210px 1fr", border:"1px solid #111", minHeight:390 }}
+        style={{ display:\"grid\", gridTemplateColumns:\"minmax(180px, 220px) 1fr\", border:\"1px solid #111\", minHeight:480, maxHeight: \"600px\" }}
       >
         {/* TOC */}
         <div style={{ borderRight:"1px solid #111" }}>
@@ -851,7 +847,7 @@ const Library = () => {
           <motion.div key={cur}
             initial={{ opacity:0, x:14 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-14 }}
             transition={{ duration:.26 }}
-            style={{ padding:"28px 36px", background:"#090909" }}
+            style={{ padding:"28px 36px", background:"#090909", overflowY: "auto" }}
           >
             <div style={{ fontFamily:"monospace", fontSize:9, color:"#8b0000", letterSpacing:".3em", marginBottom:20, paddingBottom:10, borderBottom:"1px solid #0f0f0f" }}>
               {EXCERPTS[cur].ch}
