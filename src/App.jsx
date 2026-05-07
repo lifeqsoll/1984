@@ -73,7 +73,7 @@ const NoiseCanvas = () => {
     if (!c) return;
     const ctx = c.getContext("2d");
     let id, frame = 0;
-
+ 
     const resize = () => {
       c.width  = Math.ceil(window.innerWidth  / 2);
       c.height = Math.ceil(window.innerHeight / 2);
@@ -133,7 +133,7 @@ const Scanline = () => (
 );
 
 /* ══════════════════════════════════════════════════════════════════
-   CUSTOM CURSOR
+   CUSTOM CURSOR (FIXED)
 ══════════════════════════════════════════════════════════════════ */
 const CustomCursor = () => {
   const mx = useMotionValue(0);
@@ -143,7 +143,8 @@ const CustomCursor = () => {
   const [pressed, setPressed] = useState(false);
 
   useEffect(() => {
-    const mv = e => { mx.set(e.pageX); my.set(e.pageY); };
+    // ИСПОЛЬЗУЕМ clientX и clientY вместо pageX/pageY для position: fixed
+    const mv = e => { mx.set(e.clientX); my.set(e.clientY); };
     const dn = () => setPressed(true);
     const up = () => setPressed(false);
     window.addEventListener("mousemove", mv);
@@ -154,13 +155,14 @@ const CustomCursor = () => {
       window.removeEventListener("mousedown", dn);
       window.removeEventListener("mouseup",   up);
     };
-  }, []);
+  }, [mx, my]);
 
   return (
     <motion.div
       style={{
-        position: "absolute",
-        x: sx, y: sy, translateX: "-50%", translateY: "-50%",
+        position: "fixed", // Изменено с absolute на fixed
+        top: -15, left: -15, // Центрируем SVG (30x30 / 2)
+        x: sx, y: sy,
         pointerEvents: "none", zIndex: 99999,
         scale: pressed ? 0.72 : 1,
         transition: "scale .1s",
@@ -204,10 +206,8 @@ const AllSeeingEye = () => {
   return (
     <div ref={ref} style={{ width: 320, height: 320 }}>
       <svg viewBox="0 0 320 320" width="320" height="320">
-        {/* Outer triangle */}
         <polygon points="160,22 295,258 25,258" fill="none" stroke="#5a0000" strokeWidth="1.5" opacity=".75"/>
         <polygon points="160,58 265,248 55,248" fill="none" stroke="#380000" strokeWidth="1"   opacity=".5"/>
-        {/* Rays */}
         {[...Array(20)].map((_, i) => {
           const a = (i * 18) * Math.PI / 180;
           return (
@@ -218,10 +218,8 @@ const AllSeeingEye = () => {
             />
           );
         })}
-        {/* Eye outline */}
         <path d="M 78,160 Q 160,102 242,160 Q 160,218 78,160 Z"
           fill="#060000" stroke="#c8102e" strokeWidth="1.6"/>
-        {/* Iris */}
         <circle cx={160 + p.x} cy={160 + p.y} r="28" fill="#200000"/>
         <circle cx={160 + p.x} cy={160 + p.y} r="28" fill="none" stroke="#5a0000" strokeWidth="1.2" opacity=".9"/>
         {[...Array(8)].map((_, i) => {
@@ -234,11 +232,8 @@ const AllSeeingEye = () => {
             />
           );
         })}
-        {/* Pupil */}
         <circle cx={160 + p.x} cy={160 + p.y} r="12" fill="#000"/>
-        {/* Glint */}
         <circle cx={165 + p.x} cy={155 + p.y} r="3.5" fill="#c8102e" opacity=".65"/>
-        {/* Pulsing ring */}
         <motion.circle cx="160" cy="160" r="54" fill="none" stroke="#c8102e" strokeWidth=".8"
           animate={{ scale: [1, 1.28, 1], opacity: [.45, 0, .45] }}
           transition={{ duration: 4.5, repeat: Infinity }}
@@ -354,14 +349,12 @@ const Hero = () => (
     background: "radial-gradient(ellipse at center, #110000 0%, #080808 68%)",
     paddingTop: 80,
   }}>
-    {/* Grid background */}
     <div style={{
       position: "absolute", inset: 0, opacity: .11,
       backgroundImage: "linear-gradient(#1a1a1a 1px,transparent 1px),linear-gradient(90deg,#1a1a1a 1px,transparent 1px)",
       backgroundSize: "64px 64px",
     }}/>
 
-    {/* Eye (background) */}
     <motion.div
       initial={{ opacity:0, scale:.65 }}
       animate={{ opacity:1, scale:1  }}
@@ -371,9 +364,7 @@ const Hero = () => (
       <AllSeeingEye />
     </motion.div>
 
-    {/* Main content */}
     <div style={{ textAlign:"center", position:"relative", zIndex:2 }}>
-
       <motion.div
         initial={{ opacity:0, y:18 }} animate={{ opacity:1, y:0 }} transition={{ delay:.9 }}
         style={{ fontFamily:"monospace", fontSize:10, color:"#5a0000", letterSpacing:".42em", marginBottom:18 }}
@@ -426,7 +417,6 @@ const Hero = () => (
       </motion.div>
     </div>
 
-    {/* Corner log */}
     <div style={{
       position:"absolute", top:88, left:20,
       fontFamily:"monospace", fontSize:9, color:"#1e1e1e",
@@ -435,11 +425,12 @@ const Hero = () => (
       {`[СИСТ.НАБЛЮД. v4.0]\n[CONN: МИН.ЛЮБВИ]\n[ЗАПИСЬ АКТИВНА]\n[ID: 6079_W.S.]`}
     </div>
 
-    {/* Scroll hint */}
+    {/* ИСПРАВЛЕНИЕ: Используем x: "-50%" во Framer Motion вместо transform в CSS */}
     <motion.div
       animate={{ y:[0,9,0] }} transition={{ duration:2.6, repeat:Infinity }}
       style={{
-        position:"absolute", bottom:34, left:"50%", transform:"translateX(-50%)",
+        position:"absolute", bottom:34, left:"50%", 
+        x: "-50%", 
         display:"flex", flexDirection:"column", alignItems:"center", gap:8,
         zIndex: 100, pointerEvents: "none"
       }}
@@ -614,7 +605,6 @@ const PlotCard = ({ item, i }) => {
       transition={{ duration:.65 }}
     >
       <div style={{ display:"flex", flexDirection: left ? "row" : "row-reverse" }}>
-        {/* Parallax number */}
         <motion.div style={{
           y,
           minWidth:88, display:"flex", alignItems:"center", justifyContent:"center",
@@ -624,7 +614,6 @@ const PlotCard = ({ item, i }) => {
           {item.id}
         </motion.div>
 
-        {/* Card */}
         <div style={{
           flex:1, padding:"26px 28px",
           border:"1px solid #161616",
@@ -703,10 +692,11 @@ const Meanings = () => {
             transition={{ delay:.14 + i * .16, duration:.65 }}
             style={{ display:"flex", alignItems:"center", gap:24, padding:"18px 0", borderBottom:"1px solid #111", flexWrap: "wrap" }}
           >
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(24px,4vw,48px)", color:"#8b0000", letterSpacing:3, flex:"1 1 200px", wordBreak: "break-word" }}>
+            {/* ИСПРАВЛЕНИЕ: Добавлен lineHeight для предотвращения наслоения при переносе */}
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(24px,4vw,48px)", lineHeight: 1.1, color:"#8b0000", letterSpacing:3, flex:"1 1 200px", wordBreak: "break-word" }}>
               {s.ru}
             </div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(12px,2vw,24px)", color:"#252525", letterSpacing:2, flex:"1 1 200px" }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(12px,2vw,24px)", lineHeight: 1.2, color:"#252525", letterSpacing:2, flex:"1 1 200px" }}>
               {s.en}
             </div>
           </motion.div>
@@ -718,7 +708,7 @@ const Meanings = () => {
         <div style={{ fontFamily:"monospace", fontSize:10, color:"#8b0000", letterSpacing:".3em", marginBottom:20 }}>
           СЛОВАРЬ НОВОЯЗА / NEWSPEAK GLOSSARY
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:2 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:16 /* Увеличен отступ сетки */ }}>
           {NEWSPEAK.map((n, i) => (
             <motion.div key={i}
               initial={{ opacity:0, y:18 }}
@@ -727,7 +717,7 @@ const Meanings = () => {
               whileHover={{ backgroundColor:"#0d0000", borderColor:"#7a0000" }}
               style={{ padding:"18px 20px", border:"1px solid #161616", background:"#0a0a0a", transition:"all .25s", overflow: "hidden" }}
             >
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:"#c8102e", letterSpacing:2, marginBottom:8, wordBreak: "break-word" }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, lineHeight:1.2, color:"#c8102e", letterSpacing:2, marginBottom:8, wordBreak: "break-word" }}>
                 {n.w}
               </div>
               <div style={{ fontFamily:"monospace", fontSize:11, color:"#444", lineHeight:1.7, wordBreak: "break-word" }}>{n.d}</div>
@@ -783,28 +773,58 @@ const Meanings = () => {
 };
 
 /* ══════════════════════════════════════════════════════════════════
-   LIBRARY
+   LIBRARY (ДОБАВЛЕН ПОЛНЫЙ ТЕКСТ)
 ══════════════════════════════════════════════════════════════════ */
 const EXCERPTS = [
   {
     ch: "ЧАСТЬ I · ГЛАВА 1",
-    text: `Был ясный, холодный апрельский день, и часы пробили тринадцать. Уинстон Смит, прижав подбородок к груди, чтобы спастись от злого ветра, торопливо скользнул за стеклянную дверь жилого дома «Победа», хотя не так быстро, чтобы ветер не успел вместе с ним швырнуть внутрь вихрь песчаной пыли.\n\nДом был разбит на полусогнутые квартиры, с окнами, которые начинались в четырёх футах от земли. От улицы видно было только верхнюю часть телеэкрана; нижнюю половину заслоняла карниз окна. Но напротив окна находился ещё один телеэкран — телеэкран, мимо которого нельзя было пройти, не увидев собственного отражения.`,
+    text: `Был ясный, холодный апрельский день, и часы пробили тринадцать. Уинстон Смит, прижав подбородок к груди, чтобы спастись от злого ветра, торопливо скользнул за стеклянную дверь жилого дома «Победа», хотя не так быстро, чтобы ветер не успел вместе с ним швырнуть внутрь вихрь песчаной пыли.
+
+В вестибюле пахло вареной капустой и старыми половиками. К стене был прикноплен цветной плакат, слишком большой для помещения. На нем было изображено только громадное лицо, больше метра в ширину: лицо человека лет сорока пяти, с густыми черными усами, грубое, но по-своему привлекательное. Уинстон направился к лестнице. Лифтом не стоило и пытаться пользоваться. Даже в лучшие времена он редко работал, а сейчас в дневное время электричество отключали в целях экономии, готовясь к Неделе Ненависти.
+
+Квартира была на седьмом этаже. Уинстон, которому было тридцать девять лет и у которого над правым голеностопом была варикозная язва, поднимался медленно, по пути несколько раз останавливаясь передохнуть. На каждой лестничной площадке со стены прямо в лицо смотрел плакат. Это было одно из тех изображений, которые так написаны, что глаза всегда следят за вами, куда бы вы ни повернулись. «БОЛЬШОЙ БРАТ СМОТРИТ НА ТЕБЯ», — гласила подпись.
+
+Внутри квартиры чей-то монотонный голос зачитывал колонку цифр, имеющих отношение к производству чугуна. Голос исходил из продолговатой металлической пластины вроде потускневшего зеркала, вмонтированной в правую стену. Уинстон повернул выключатель, и голос стал звучать чуть тише, хотя слова все равно можно было разобрать. Аппарат (он назывался телекран) можно было приглушить, но выключить его совсем было нельзя.
+
+Уинстон подошел к окну: щуплый, тщедушный человек, чью худобу подчеркивал синий комбинезон партийной униформы. Волосы у него были очень светлые, лицо от природы румяное, кожу загрубили скверное мыло, тупые лезвия и холод прошедшей зимы.`,
   },
   {
     ch: "ДНЕВНИК · 4 АПРЕЛЯ",
-    text: `4 апреля 1984 года.\nВчера в кино. Военные фильмы. Очень хороший — как лодку с беженцами бомбили вертолётами в Средиземном море. Публика очень развлекалась, кричала «ещё!», когда вертолёт топил лодку, полную детей.\n\nДОЛОЙ БОЛЬШОГО БРАТА.\nДОЛОЙ БОЛЬШОГО БРАТА.\nДОЛОЙ БОЛЬШОГО БРАТА.\n\nВот видишь — это невозможно? Ужас? Или это просто развлечение? Хор вскочил с мест и восторженно аплодировал экрану.`,
+    text: `4 апреля 1984 года.
+
+Вчера в кино. Все фильмы про войну. Один очень хороший — про то, как корабль с беженцами разбомбили где-то в Средиземном море. Публике очень понравилось, когда тонул огромный толстяк, пытавшийся уплыть от преследовавшего его вертолета... Но самым интересным оказался момент, когда шлюпку с детьми разнесло в щепки взрывом.
+
+ДОЛОЙ БОЛЬШОГО БРАТА.
+ДОЛОЙ БОЛЬШОГО БРАТА.
+ДОЛОЙ БОЛЬШОГО БРАТА.
+
+Они расстреляют меня. Мне все равно. Они пустят пулю мне в затылок. Долой Большого Брата. Я всегда ненавидел его. Это мыслепреступление. Неважно, напишешь ты ДОЛОЙ БОЛЬШОГО БРАТА, или воздержишься от написания. Полиция мыслей всё равно доберется до тебя.`,
   },
   {
     ch: "ЗАПИСКА ДЖУЛИИ",
-    text: `Незнакомка протянула ему сложенный клочок бумаги.\nОн развернул и прочитал. Написано было отчётливо, крупными буквами:\n\n«Я тебя люблю.»\n\nС минуту он сидел в оцепенении, не замечая смысла написанного. Потом понял — и почувствовал холодную тревогу. Это была смерть. Это была сразу смерть. Никакие слова более странные не могли быть написаны для человека, живущего в мире, где любовь между мужчиной и женщиной — особое преступление.`,
+    text: `Девушка с темными волосами упала прямо перед ним на пол. Уинстон инстинктивно бросился вперед, чтобы помочь ей. За те пару секунд, пока он поднимал ее, она сунула ему в руку что-то маленькое и плоское.
+
+В туалете он развернул бумажку. На ней крупным, неровным почерком было выведено:
+
+«Я тебя люблю.»
+
+Уинстон почувствовал, как сердце у него ушло в пятки. В мире, где за несанкционированный взгляд можно было поплатиться жизнью, эта записка была равносильна смертному приговору. Но вместе со страхом пришла и дикая, необузданная надежда. Кто-то бросил вызов Партии.`,
   },
   {
     ch: "КОМНАТА 101",
-    text: `— Вы уже знаете, — сказал О'Брайен, — в какой комнате находитесь. Вы всегда знали. Все знают. История человечества наполнена Комнатами 101.\n\nСтена позади О'Брайена приводила в действие какой-то механизм. Железная дверь внизу открылась. Из отверстия хлынул запах животного. На первый момент Уинстон не понял, что это — какое-то смутное, отвратительное впечатление. Потом он услышал писк.`,
+    text: `— Вы спрашивали меня однажды, — произнес О'Брайен, — что находится в комнате сто один. Я ответил вам, что вы уже знаете это. И вы действительно знаете. В комнате сто один находится самое страшное, что есть на свете.
+
+Стена позади О'Брайена медленно раскрылась. Оттуда донеслось омерзительное шуршание и писк. Уинстон еще не видел, что это, но по его спине уже пробежал холодок первобытного ужаса.
+
+— Самое страшное на свете, — продолжал О'Брайен мягким голосом, — для каждого свое. Для одного это погребение заживо, для другого — огонь, или вода, или пронзание колом. В вашем случае, Уинстон, самое страшное на свете — это крысы.`,
   },
   {
     ch: "ЧАСТЬ III · ФИНАЛ",
-    text: `Сидя на скамье в кафе, он пил джин и смотрел телевизор. Он любил Большого Брата.\n\nВсё было в порядке, теперь всё в порядке, борьба окончена. Он одержал победу над собой. Он любил Большого Брата.`,
+    text: `Уинстон сидел в кафе "Каштан", смотрел на экран телевизора и потягивал джин с привкусом гвоздики. Из телекрана неслась торжествующая музыка. Победа!
+
+Он поднял глаза на огромное лицо. Понадобилось сорок лет, чтобы он понял, какая улыбка скрывается под черными усами. О жестокое, ненужное недоразумение! О упрямый, своевольный изгнанник из любящей груди! Две сдобренные джином слезы прокатились по крыльям его носа. 
+
+Но все хорошо, теперь все хорошо, борьба закончилась. Он одержал победу над самим собой. Он любил Большого Брата.`,
   },
 ];
 
@@ -822,10 +842,9 @@ const Library = () => {
 
       <motion.div
         initial={{ opacity:0, y:22 }} animate={inV ? {opacity:1, y:0} : {}} transition={{ delay:.3 }}
-        style={{ display:\"grid\", gridTemplateColumns:\"minmax(180px, 220px) 1fr\", border:\"1px solid #111\", minHeight:480, maxHeight: \"600px\" }}
+        style={{ display:"grid", gridTemplateColumns:"minmax(180px, 220px) 1fr", border:"1px solid #111", minHeight:480, maxHeight: "600px" }}
       >
-        {/* TOC */}
-        <div style={{ borderRight:"1px solid #111" }}>
+        <div style={{ borderRight:"1px solid #111", overflowY: "auto" }}>
           <div style={{ padding:"9px 14px", borderBottom:"1px solid #111", fontFamily:"monospace", fontSize:9, color:"#2a2a2a", letterSpacing:".2em" }}>
             СОДЕРЖАНИЕ
           </div>
@@ -842,7 +861,6 @@ const Library = () => {
           ))}
         </div>
 
-        {/* Reader */}
         <AnimatePresence mode="wait">
           <motion.div key={cur}
             initial={{ opacity:0, x:14 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-14 }}
@@ -863,7 +881,6 @@ const Library = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Footer */}
       <div style={{ marginTop:100, textAlign:"center", fontFamily:"monospace", fontSize:9, color:"#1a1a1a", letterSpacing:".2em", lineHeight:2.6 }}>
         <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:"#141414", letterSpacing:7, marginBottom:12 }}>
           МИНИСТЕРСТВО ПРАВДЫ / MINITRUE
