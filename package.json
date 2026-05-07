@@ -1,5 +1,5 @@
 {
-  "homepage": "https://github.io",
+  "homepage": "https://lifeqsoll.github.io/1984/",
   "name": "1984-project",
   "private": true,
   "version": "0.0.0",
@@ -13,6 +13,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "framer-motion": "^12.38.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
